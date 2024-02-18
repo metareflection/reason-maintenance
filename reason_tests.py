@@ -62,9 +62,21 @@ def ex4():
     tms.set_assumption(nc, False)
     return TMSSolver(tms).sat()
 
+def ex5():
+    tms = TMS()
+    na = tms.create_node("a")
+    nb = tms.create_node("b")
+    nc = tms.create_node("c")
+    tms.add_constraint(None, Implies(Or(na, nb), nc))
+    tms.enable_assumption(na)
+    tms.enable_assumption(nb)
+    tms.set_assumption(nc, False)
+    return TMSSolver(tms).sat()
+
 if __name__ == '__main__':
     print(ex1())
     print(ex2())
     print(ex3())
     print(ex4())
+    print(ex5())
 

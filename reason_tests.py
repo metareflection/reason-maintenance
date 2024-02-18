@@ -26,9 +26,9 @@ def ex2():
     ny = tms.create_node("y")
     nz = tms.create_node("z")
     nr = tms.create_node("r")
-    tms.add_constraint(None, lambda xs: Or(xs[0], xs[1]), [nx, ny])
-    tms.add_constraint(None, lambda xs: Or(Not(xs[0]), xs[1]), [ny, nz])
-    tms.add_constraint(None, lambda xs: Or(Not(xs[0]), xs[1]), [nz, nr])
+    tms.add_constraint(None, Or(nx, ny))
+    tms.add_constraint(None, Or(Not(ny), nz))
+    tms.add_constraint(None, Or(Not(nz), nr))
     tms.set_assumption(nx, False)
     return TMSSolver(tms).sat()
     

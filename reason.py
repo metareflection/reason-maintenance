@@ -5,7 +5,8 @@ TRUE = True
 FALSE = False
 
 class Node:
-    def __init__(self, index, datum, assumptionp, tms, label = UNKNOWN):
+    def __init__(self, var, index, datum, assumptionp, tms, label = UNKNOWN):
+        self.var = var
         self.index = index
         self.datum = datum
         self.assumptionp = assumptionp
@@ -13,30 +14,33 @@ class Node:
         self.label = label
 
 class Constraint:
-    def __init__(self, index, informant, relation, nodes):
+    def __init__(self, index, informant, relation):
         self.index = index
         self.informant = informant
         self.relation = relation
-        self.nodes = nodes
 
 class TMS:
     def __init__(self):
         self.node_counter = 0
-        self.nodes = {}
+        self.nodes_by_datum = {}
+        self.nodes_by_var = {}
         self.constraint_counter = 0
         self.constraints = []
-    def add_constraint(self, informant, relation, nodes):
+    def add_constraint(self, informant, relation):
         self.constraint_counter += 1
-        c = Constraint(self.constraint_counter, informant, relation, nodes)
+        c = Constraint(self.constraint_counter, informant, relation)
         self.constraints += [c]
         return c
     def create_node(self, datum, assumptionp = True):
-        assert datum not in self.nodes
+        assert datum not in self.nodes_by_datum
         self.node_counter += 1
-        node = Node(self.node_counter, datum, assumptionp, self)
-        self.nodes[datum] = node
-        return node
-    def set_assumption(self, node, label):
+        variable = Bool(datum)
+        node = Node(variable, self.node_counter, datum, assumptionp, self)
+        self.nodes_by_datum[datum] = node
+        self.nodes_by_var[variable] = node
+        return variable
+    def set_assumption(self, variable, label):
+        node = self.nodes_by_var[variable]
         assert node.assumptionp
         node.label = label
 
@@ -44,10 +48,9 @@ class TMS:
     def justify_node(self, informant, conclusion, premises):
         return self.add_constraint(
             informant,
-            lambda xs: Implies(And(*xs[1:]), xs[0]),
-            [conclusion] + premises)
-    def enable_assumption(self, node):
-        self.set_assumption(node, TRUE)
+            Implies(And(*premises), conclusion))
+    def enable_assumption(self, variable):
+        self.set_assumption(variable, TRUE)
 
 class TMSSolver:
     def __init__(self, tms):
@@ -55,7 +58,6 @@ class TMSSolver:
 
     def sat(self):
         self.solver = Solver()
-        self.variables = self.create_variables()
         self.add_constraints()
         if self.solver.check() == sat:
             return self.model()
@@ -65,16 +67,9 @@ class TMSSolver:
     def model(self):
         return self.solver.model()
 
-    def create_variables(self):
-        return dict([(node.datum, Bool(node.datum)) for node in self.tms.nodes.values()])
-
-    def to_vars(self, nodes):
-        return [self.variables[node.datum] for node in nodes]
-
     def add_constraints(self):
-        for (datum,x) in self.variables.items():
-            node = self.tms.nodes[datum]
+        for (x,node) in self.tms.nodes_by_var.items():
             if node.label != UNKNOWN:
                 self.solver.add(x if node.label == TRUE else Not(x))
         for constraint in self.tms.constraints:
-            self.solver.add(constraint.relation(self.to_vars(constraint.nodes)))
+            self.solver.add(constraint.relation)

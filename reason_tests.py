@@ -49,8 +49,20 @@ def ex3():
     tms.add_constraint("only one guilty suspect", Xor(guilty_alice, guilty_bob))
     return TMSSolver(tms).sat()
 
+def ex4():
+    tms = TMS()
+    na = tms.create_node("a")
+    nb = tms.create_node("b")
+    nc = tms.create_node("c")
+    tms.justify_node("j", nc, [na, nb])
+    tms.enable_assumption(na)
+    tms.enable_assumption(nb)
+    tms.set_assumption(nc, False)
+    return TMSSolver(tms).sat()
+
 if __name__ == '__main__':
     print(ex1())
     print(ex2())
     print(ex3())
+    print(ex4())
 

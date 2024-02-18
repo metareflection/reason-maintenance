@@ -58,10 +58,12 @@ class TMSSolver:
 
     def sat(self):
         self.solver = Solver()
+        self.solver.set(unsat_core=True)
         self.add_constraints()
         if self.solver.check() == sat:
             return self.model()
         else:
+            print(self.solver.unsat_core())
             return None
 
     def model(self):
@@ -70,6 +72,11 @@ class TMSSolver:
     def add_constraints(self):
         for (x,node) in self.tms.nodes_by_var.items():
             if node.label != UNKNOWN:
-                self.solver.add(x if node.label == TRUE else Not(x))
+                if node.label == TRUE:
+                    self.solver.assert_and_track(x, x)
+                else:
+                    notx = Bool(f"Not({node.datum})")
+                    self.solver.add(Xor(notx, x))
+                    self.solver.assert_and_track(Not(x), notx)
         for constraint in self.tms.constraints:
             self.solver.add(constraint.relation)

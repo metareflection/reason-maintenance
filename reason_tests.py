@@ -31,8 +31,26 @@ def ex2():
     tms.add_constraint(None, Or(Not(nz), nr))
     tms.set_assumption(nx, False)
     return TMSSolver(tms).sat()
-    
+
+def ex3():
+    tms = TMS()
+    def create_suspect(name, vals = [None, None, None]):
+        guilty = tms.create_node(f"{name} is guilty.")
+        motive = tms.create_node(f"{name} has motive.")
+        opportunity = tms.create_node(f"{name} has opportunity.")
+        means = tms.create_node(f"{name} has means.")
+        tms.justify_node(f"{name} justified guilty", guilty, [motive, opportunity, means])
+        for x,v in zip([motive,opportunity,means],vals):
+            if v is not None:
+                tms.set_assumption(x, v)
+        return guilty
+    guilty_alice = create_suspect("Alice", [None, True, True])
+    guilty_bob = create_suspect("Bob", [False, None, None])
+    tms.add_constraint("only one guilty suspect", Xor(guilty_alice, guilty_bob))
+    return TMSSolver(tms).sat()
+
 if __name__ == '__main__':
     print(ex1())
     print(ex2())
+    print(ex3())
 

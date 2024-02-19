@@ -72,10 +72,14 @@ class TMSSolver:
         self.solver = Solver()
         self.solver.set(unsat_core=True)
         self.add_constraints()
-        if self.solver.check() == sat:
+        c = self.solver.check()
+        if c == sat:
             return SAT(self.model())
-        else:
+        elif c == unsat:
             return UNSAT(self.solver.unsat_core())
+        else:
+            assert c == unknown
+            return None
 
     def model(self):
         return self.solver.model()

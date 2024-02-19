@@ -1,5 +1,17 @@
 from z3 import *
 
+from dataclasses import dataclass
+
+@dataclass
+class SAT:
+    model: object
+
+@dataclass
+class UNSAT:
+    core: object
+
+Result = SAT | UNSAT
+
 UNKNOWN = None
 TRUE = True
 FALSE = False
@@ -61,10 +73,9 @@ class TMSSolver:
         self.solver.set(unsat_core=True)
         self.add_constraints()
         if self.solver.check() == sat:
-            return self.model()
+            return SAT(self.model())
         else:
-            print(self.solver.unsat_core())
-            return None
+            return UNSAT(self.solver.unsat_core())
 
     def model(self):
         return self.solver.model()

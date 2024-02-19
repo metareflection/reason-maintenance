@@ -95,3 +95,23 @@ class TMSSolver:
                     self.solver.assert_and_track(Not(x), notx)
         for constraint in self.tms.constraints:
             self.solver.add(constraint.relation)
+
+class Interactor:
+    def __init__(self, tms):
+        self.tms = tms
+
+    def converge(self):
+        while True:
+            match TMSSolver(self.tms).sat():
+                case SAT(model):
+                    return model
+                case UNSAT(core):
+                    print(core)
+                    inp = input("Which to retract? ")
+                    datum = inp
+                    label = True
+                    if inp.startswith("Not(") and inp.endswith(")"):
+                        datum = inp[len("Not("):-1]
+                        label = False
+                    node = self.tms.nodes_by_datum[datum]
+                    self.tms.set_assumption(node.var, not label)

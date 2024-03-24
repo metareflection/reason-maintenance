@@ -1,2 +1,2 @@
 # reason-maintenance
-Modern Truth-Maintenance System and Inference Engine
+Towards a Modern Truth-Maintenance System and Inference Engine

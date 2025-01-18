@@ -1,3 +1,0 @@
-[submodule "microKanren"]
-	path = microKanren
-	url = https://github.com/mhr/kanren-impl.git
